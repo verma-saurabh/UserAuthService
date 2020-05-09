@@ -8,28 +8,31 @@ import com.example.UserAuthService.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpServerErrorException;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @Slf4j
-@RestController(value = "/user/")
+@RestController
+@RequestMapping(value = "/user")
 public class AuthController {
 
     @Autowired
     public UserService userService;
 
     @PostMapping(value = "/login")
-    public void login(@RequestBody @Valid LoginRequest loginRequest) {
-
+    public String login(@RequestBody @Valid LoginRequest loginRequest) {
+        return userService.login(loginRequest).
+                orElseThrow(() ->
+                        new HttpServerErrorException(HttpStatus.FORBIDDEN, "Login Failed"));
     }
 
     @PostMapping(value = "/signup")
-    public void signup(@RequestBody @Valid SignUpRequest signUpRequest) {
+    public User signup(@RequestBody @Valid SignUpRequest signUpRequest) {
+        return userService.signUp(signUpRequest)
+                .orElseThrow(() -> new HttpServerErrorException(HttpStatus.BAD_REQUEST, "User Already Exists"));
     }
 
     @PostMapping(value = "/logout")
@@ -40,5 +43,10 @@ public class AuthController {
     @PostMapping(value = "/dummy")
     public void dummy() {
 
+    }
+
+    @GetMapping(value = "/getAll")
+    public List<User> getAllUsers() {
+        return userService.getAllUsers();
     }
 }
