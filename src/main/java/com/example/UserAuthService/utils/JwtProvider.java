@@ -1,18 +1,18 @@
 package com.example.UserAuthService.utils;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 public class JwtProvider {
 
@@ -21,7 +21,7 @@ public class JwtProvider {
 
     @Autowired
     public JwtProvider(@Value("${security.jwt.token.secret-key}") String secretKey,
-                       @Value("${security.jwt.token.expiration}")long validityInMilliseconds) {
+                       @Value("${security.jwt.token.expiration}") long validityInMilliseconds) {
 
         this.secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
         this.validityInMilliseconds = validityInMilliseconds;
@@ -72,5 +72,24 @@ public class JwtProvider {
     public String getUsername(String token) {
         return Jwts.parser().setSigningKey(secretKey)
                 .parseClaimsJws(token).getBody().getSubject();
+    }
+
+    public boolean validateToken(String token, HttpServletRequest httpServletRequest) {
+        try {
+            Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
+            return true;
+        } catch (SignatureException ex) {
+            log.info("Invalid JWT Signature");
+        } catch (MalformedJwtException ex) {
+            log.info("Invalid JWT token");
+        } catch (ExpiredJwtException ex) {
+            log.info("Expired JWT token");
+            httpServletRequest.setAttribute("expired", ex.getMessage());
+        } catch (UnsupportedJwtException ex) {
+            log.info("Unsupported JWT exception");
+        } catch (IllegalArgumentException ex) {
+            log.info("Jwt claims string is empty");
+        }
+        return false;
     }
 }

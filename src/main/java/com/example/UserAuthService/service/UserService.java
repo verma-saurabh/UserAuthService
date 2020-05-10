@@ -13,6 +13,7 @@ public interface UserService {
     public Optional<String> login(LoginRequest request);
     public Optional<User> signUp(SignUpRequest request);
     public void logout(LogoutRequest request);
-    public void dummy();
     public List<User> getAllUsers();
+    public String refresh(String userName);
+    public Optional<User> findUser(String userName);
 }
