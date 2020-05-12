@@ -5,6 +5,7 @@ import com.example.UserAuthService.requests.LoginRequest;
 import com.example.UserAuthService.requests.LogoutRequest;
 import com.example.UserAuthService.requests.SignUpRequest;
 import com.example.UserAuthService.response.LoginResponse;
+import com.example.UserAuthService.response.LogoutResponse;
 import com.example.UserAuthService.response.RefereshTokenResponse;
 import com.example.UserAuthService.response.SignUpResponse;
 import com.example.UserAuthService.service.UserService;
@@ -79,8 +80,17 @@ public class AuthController {
     }
 
     @PostMapping(value = "/logout")
-    public void logout(@RequestBody @Valid LogoutRequest request) {
+    public ResponseEntity<LogoutResponse> logout(@RequestBody @Valid LogoutRequest request) {
+        LogoutResponse response = new LogoutResponse();
+        try {
+            response.setMessage("Log out successful");
+            response.setStatus(1);
 
+        } catch (Exception e) {
+            response.setMessage(e.getMessage());
+            response.setStatus(0);
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PostMapping(value = "/dummy")
